@@ -8,6 +8,10 @@ Use this index when you need detailed guidance beyond the core rules in `SKILL.m
   - follow-up handling
   - source/target clarification
   - product-boundary discipline
+- [workflow/composition-and-output.md](workflow/composition-and-output.md)
+  - composition scope
+  - working file placement
+  - output style for generated files
 - [workflow/diagnostics-handling.md](workflow/diagnostics-handling.md)
   - hard error vs soft warning
   - diagnostics explanation rules

@@ -1,6 +1,6 @@
 # Diagnostics Handling
 
-Use this reference when the user asks about warnings, errors, loss, or save behavior.
+Use this reference when the user asks about warnings, errors, or loss behavior.
 
 ## Hard Errors
 
@@ -21,3 +21,4 @@ Use this reference when the user asks about warnings, errors, loss, or save beha
 - then explain what is not guaranteed
 - when useful, point the user to the relevant spec family such as `DIAGNOSTICS`, `SPEC`, `ABC_IO`, `MIDI_IO`, or `MUSESCORE_IO`
 - keep the distinction between semantic preservation and textual preservation explicit
+- for file placement or generated-output handling, defer to `workflow/composition-and-output.md`

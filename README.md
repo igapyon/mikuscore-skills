@@ -34,6 +34,8 @@ npm run build:bundle
 
 この repo では、OpenAI Codex の repo-local `.codex/skills` を検証先として使う。
 
+一般の ABC 作曲や下書きは `mikuscore` を呼ばずに進め、`mikuscore` 固有の変換や handoff を使いたい段階でだけ `mikuscore` を明示する。
+
 基本手順:
 
 ```bash
@@ -42,5 +44,7 @@ npm run install:local
 ```
 
 その後、新しい Codex セッションで `mikuscore` を明示したプロンプトを使って発火確認を行う。
+
+`mikuscore` を呼び出した後に生成物を repo に保存する場合は、`skills/mikuscore/` ではなく、repo 直下の `mikuscore/` を保存先として扱う。
 
 詳細は [docs/development.md](docs/development.md) を参照。

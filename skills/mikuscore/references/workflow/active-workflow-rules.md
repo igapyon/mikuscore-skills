@@ -5,6 +5,7 @@ Use this reference when the skill is already active and you need follow-up handl
 ## Follow-up Handling
 
 - keep follow-up work inside `mikuscore` terms when that remains the most natural continuation
+- if the follow-up is really generic composition or plain `ABC` drafting without `mikuscore`-specific behavior, it is acceptable to step back out of the skill's specialized framing
 - prefer `convert`, `diagnostics`, `format-guidance`, and `workflow` handling over generic music-software advice
 - when multiple format names appear, identify `source` and `target` before giving conversion guidance
 - if the user already started from a `mikuscore` question, do not drift into generic notation-tool comparisons unless asked
