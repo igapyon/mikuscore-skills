@@ -33,6 +33,33 @@ git fetch https://github.com/igapyon/mikuscore.git devel
 git subtree pull --prefix=vendor/mikuscore https://github.com/igapyon/mikuscore.git devel --squash
 ```
 
+## ローカル Skill 検証
+
+この手順は OpenAI Codex の repo-local `.codex/skills` 検証フローを前提とする。
+
+このリポジトリでは、repo 直下の `.codex/skills/mikuscore` をローカル検証先として使える。
+
+開発時の基本フロー:
+
+```bash
+npm test
+npm run install:local
+```
+
+`npm run install:local` は `skills/mikuscore` を `.codex/skills/mikuscore` へ同期する。
+
+確認時の前提:
+
+- `~/.codex` ではなく、この repo の `.codex/skills/mikuscore` を検証先にする
+- 反映確認は既存セッションではなく、新しい Codex セッションで行う
+- `mikuscore` を明示したプロンプトで発火条件を確認する
+
+必要に応じて配布用 bundle も生成する。
+
+```bash
+npm run build:bundle
+```
+
 ## 運用上の注意
 
 - `vendor/mikuscore/` へ直接編集を入れるのは原則避ける
