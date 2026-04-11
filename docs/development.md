@@ -38,6 +38,7 @@ git subtree pull --prefix=vendor/mikuscore https://github.com/igapyon/mikuscore.
 この手順は OpenAI Codex の repo-local `.codex/skills` 検証フローを前提とする。
 
 このリポジトリでは、repo 直下の `.codex/skills/mikuscore` をローカル検証先として使える。
+一般の ABC 作曲や下書きは `mikuscore` を呼ばずに進め、`mikuscore` 固有の変換や handoff を使いたい段階でだけ `mikuscore` を明示する。
 
 開発時の基本フロー:
 
@@ -47,6 +48,8 @@ npm run install:local
 ```
 
 `npm run install:local` は `skills/mikuscore` を `.codex/skills/mikuscore` へ同期する。
+
+`mikuscore` を呼び出した後に生成した曲断片や handoff 用の保存物は、`skills/mikuscore/` ではなく、repo 直下の `mikuscore/` を保存先として扱う。
 
 確認時の前提:
 
