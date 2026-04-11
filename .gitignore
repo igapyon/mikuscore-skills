@@ -1,2 +1,4 @@
 .DS_Store
 workplace/
+bundle/
+node_modules/

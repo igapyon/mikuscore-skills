@@ -2,9 +2,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import ts from "typescript";
 import { JSDOM } from "jsdom";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,72 +12,39 @@ const __dirname = path.dirname(__filename);
 const DEFAULT_ROOT_DIR = path.resolve(__dirname, "../..");
 const ENTRY_TS = "src/ts/cli-api.ts";
 const VEROVIO_JS = "src/js/verovio.js";
-const importRe = /(?:import|export)\s+[^"']*?from\s+["'](.+?)["']|import\s*\(\s*["'](.+?)["']\s*\)/g;
-
-function normalizePath(relativePath) {
-  return relativePath.split(path.sep).join("/");
-}
-
-function readText(rootDir, relativePath) {
-  return fs.readFileSync(path.resolve(rootDir, relativePath), "utf8");
-}
-
-function resolveTsModule(rootDir, fromId, specifier) {
-  if (!specifier.startsWith(".")) return null;
-  const fromDir = path.dirname(fromId);
-  const candidateBase = normalizePath(path.join(fromDir, specifier));
-  const tsFile = `${candidateBase}.ts`;
-  const indexTs = `${candidateBase}/index.ts`;
-  if (fs.existsSync(path.resolve(rootDir, tsFile))) return tsFile;
-  if (fs.existsSync(path.resolve(rootDir, indexTs))) return indexTs;
-  throw new Error(`Cannot resolve module: ${specifier} (from ${fromId})`);
-}
-
-function collectGraph(rootDir) {
-  const queue = [ENTRY_TS];
-  const seen = new Set();
-  const order = [];
-
-  while (queue.length > 0) {
-    const current = queue.pop();
-    if (!current || seen.has(current)) continue;
-    seen.add(current);
-    order.push(current);
-
-    const src = readText(rootDir, current);
-    importRe.lastIndex = 0;
-    for (;;) {
-      const match = importRe.exec(src);
-      if (!match) break;
-      const specifier = match[1] ?? match[2];
-      if (!specifier) continue;
-      const resolved = resolveTsModule(rootDir, current, specifier);
-      if (resolved) queue.push(resolved);
-    }
-  }
-
-  return order;
-}
-
 function compileGraph(rootDir) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mikuscore-cli-api-"));
   fs.writeFileSync(path.join(tempDir, "package.json"), JSON.stringify({ type: "commonjs" }), "utf8");
 
-  for (const tsId of collectGraph(rootDir)) {
-    const src = readText(rootDir, tsId);
-    const transpiled = ts.transpileModule(src, {
-      fileName: tsId,
-      compilerOptions: {
-        target: ts.ScriptTarget.ES2018,
-        module: ts.ModuleKind.CommonJS,
-        moduleResolution: ts.ModuleResolutionKind.NodeJs,
-        lib: ["DOM", "DOM.Iterable", "ES2018"],
-        esModuleInterop: true,
-      },
-    });
-    const outPath = path.join(tempDir, tsId.replace(/\.ts$/, ".js"));
-    fs.mkdirSync(path.dirname(outPath), { recursive: true });
-    fs.writeFileSync(outPath, transpiled.outputText, "utf8");
+  const result = spawnSync(
+    "tsc",
+    [
+      "--pretty",
+      "false",
+      "--module",
+      "commonjs",
+      "--target",
+      "es2018",
+      "--moduleResolution",
+      "node",
+      "--lib",
+      "DOM,DOM.Iterable,ES2018",
+      "--esModuleInterop",
+      "--skipLibCheck",
+      "--rootDir",
+      rootDir,
+      "--outDir",
+      tempDir,
+      path.resolve(rootDir, ENTRY_TS),
+    ],
+    {
+      cwd: rootDir,
+      encoding: "utf8",
+    }
+  );
+
+  if (result.status !== 0) {
+    throw new Error(result.stderr?.trim() || result.stdout?.trim() || "tsc command failed");
   }
 
   return tempDir;
