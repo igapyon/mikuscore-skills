@@ -33,6 +33,12 @@ git fetch https://github.com/igapyon/mikuscore.git devel
 git subtree pull --prefix=vendor/mikuscore https://github.com/igapyon/mikuscore.git devel --squash
 ```
 
+最近の取り込みメモ:
+
+- `src/ts/musescore-io.ts` の ES2018 互換化は upstream に入っていたため、そのローカル carry は不要になった
+- `scripts/lib/load-cli-api.mjs` は upstream 更新後も `typescript` の runtime import で CLI build/test が落ちたため、この repo では `tsc` CLI 呼び出しベースの互換修正を引き続き保持している
+- upstream 更新後は `npm --prefix vendor/mikuscore run build` と root `npm run build` の両方で確認する
+
 ## ローカル Skill 検証
 
 この手順は OpenAI Codex の repo-local `.codex/skills` 検証フローを前提とする。
@@ -48,6 +54,7 @@ npm run install:local
 ```
 
 `npm run install:local` は `skills/mikuscore` を `.codex/skills/mikuscore` へ同期する。
+この同期はローカル検証用の明示操作として扱い、`npm run build` や bundle build の一部には含めない。
 
 `mikuscore` を呼び出した後に生成した曲断片や handoff 用の保存物は、`skills/mikuscore/` ではなく、repo 直下の `mikuscore/` を保存先として扱う。
 
@@ -62,6 +69,8 @@ npm run install:local
 ```bash
 npm run build:bundle
 ```
+
+`npm run build` 系は build と検証に限定し、repo-local `.codex` へのコピーは副作用として実行しない。
 
 ## 運用上の注意
 
