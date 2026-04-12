@@ -633,15 +633,51 @@ const readPartTransposeFromMusicXml = (part: Element): { diatonic?: number; chro
 
 const readPartTransposeFromMusePart = (part: Element): { diatonic?: number; chromatic?: number } | null => {
   const diatonic = firstNumber(part, "Instrument > transposeDiatonic")
-    ?? firstNumber(part, "Instrument > mksTransposeDiatonic")
     ?? firstNumber(part, "transpose > diatonic");
   const chromatic = firstNumber(part, "Instrument > transposeChromatic")
-    ?? firstNumber(part, "Instrument > mksTransposeChromatic")
     ?? firstNumber(part, "transpose > chromatic");
   const out: { diatonic?: number; chromatic?: number } = {};
   if (Number.isFinite(diatonic)) out.diatonic = Math.round(Number(diatonic));
   if (Number.isFinite(chromatic)) out.chromatic = Math.round(Number(chromatic));
   return Object.keys(out).length ? out : null;
+};
+
+const readMuseKeyFifths = (
+  node: Element,
+  options: { transposingPart: boolean; descendantPrefix?: string } = { transposingPart: false }
+): number | null => {
+  const prefix = options.descendantPrefix ? `${options.descendantPrefix} ` : "";
+  const read = (field: "transposeKey" | "accidental" | "concertKey"): number | null => (
+    firstNumber(node, `${prefix}KeySig > ${field}`)
+    ?? firstNumber(node, `${prefix}voice > KeySig > ${field}`)
+    ?? firstNumber(node, `${prefix}voice > keysig > ${field}`)
+  );
+  const transposeKey = read("transposeKey");
+  const accidental = read("accidental");
+  const concertKey = read("concertKey");
+  const resolved = options.transposingPart
+    ? (transposeKey ?? accidental ?? concertKey)
+    : (accidental ?? concertKey ?? transposeKey);
+  if (resolved === null || !Number.isFinite(resolved)) return null;
+  return Math.max(-7, Math.min(7, Math.round(resolved)));
+};
+
+const normalizeKeyFifthsToMuseRange = (fifths: number): number => {
+  if (!Number.isFinite(fifths)) return 0;
+  let normalized = Math.round(fifths);
+  while (normalized > 7) normalized -= 12;
+  while (normalized < -7) normalized += 12;
+  return normalized;
+};
+
+const resolveMuseExportKeySigXml = (writtenFifths: number, transpose: { diatonic?: number; chromatic?: number } | null): string => {
+  const normalizedWritten = normalizeKeyFifthsToMuseRange(writtenFifths);
+  const chromatic = Number.isFinite(transpose?.chromatic) ? Math.round(Number(transpose?.chromatic)) : null;
+  if (chromatic === null) {
+    return `<KeySig><accidental>${normalizedWritten}</accidental><concertKey>${normalizedWritten}</concertKey></KeySig>`;
+  }
+  const concertKey = normalizeKeyFifthsToMuseRange(normalizedWritten + (7 * chromatic));
+  return `<KeySig><accidental>${normalizedWritten}</accidental><concertKey>${concertKey}</concertKey><transposeKey>${normalizedWritten}</transposeKey></KeySig>`;
 };
 
 const buildTransposeXml = (transpose: { diatonic?: number; chromatic?: number } | null): string => {
@@ -978,10 +1014,7 @@ export const convertMuseScoreToMusicXml = (
 
   const globalBeats = Math.max(1, Math.round(firstNumber(score, "Staff > Measure > TimeSig > sigN") ?? 4));
   const globalBeatType = Math.max(1, Math.round(firstNumber(score, "Staff > Measure > TimeSig > sigD") ?? 4));
-  const globalFifths = Math.max(
-    -7,
-    Math.min(7, Math.round(firstNumber(score, "Staff > Measure > KeySig > accidental") ?? 0))
-  );
+  const globalFifths = readMuseKeyFifths(score, { transposingPart: false, descendantPrefix: "Staff > Measure >" }) ?? 0;
   const globalMode = readGlobalMuseKeyMode(score);
 
   const staffNodes = directChildrenByTag(score, "Staff").filter((staff) => {
@@ -1059,6 +1092,7 @@ export const convertMuseScoreToMusicXml = (
     const group = groupedStaffIds[partIndex];
     const partId = `P${partIndex + 1}`;
     const parsedStaffs: ParsedMuseScoreStaff[] = [];
+    const partTranspose = group.partEl ? readPartTransposeFromMusePart(group.partEl) : null;
     const partClefOverrides = group.partEl
       ? readStaffClefOverridesFromMusePart(group.partEl, group.staffIds)
       : new Map<string, { sign: "G" | "F" | "C"; line: number }>();
@@ -1103,7 +1137,8 @@ export const convertMuseScoreToMusicXml = (
       let currentBeats = globalBeats;
       let currentBeatType = globalBeatType;
       let currentTimeSymbol: "cut" | null = null;
-      let currentFifths = globalFifths;
+      let currentFifths = readMuseKeyFifths(staff, { transposingPart: partTranspose !== null, descendantPrefix: "Measure >" })
+        ?? globalFifths;
       let currentMode = globalMode;
       const parsedMeasures: ParsedMuseScoreMeasure[] = [];
       let absoluteDivCursor = 0;
@@ -1146,10 +1181,8 @@ export const convertMuseScoreToMusicXml = (
       const measureLenDiv = parseMeasureLenToDivisions(measure, divisions);
       const capacityDiv = measureLenDiv ?? nominalCapacityDiv;
       const implicit = measureLenDiv !== null && measureLenDiv < nominalCapacityDiv;
-      const fifthsRaw = firstNumber(measure, ":scope > KeySig > accidental")
-        ?? firstNumber(measure, ":scope > voice > KeySig > accidental")
-        ?? firstNumber(measure, ":scope > voice > keysig > accidental");
-      const fifths = fifthsRaw === null ? currentFifths : Math.max(-7, Math.min(7, Math.round(fifthsRaw)));
+      const fifthsRaw = readMuseKeyFifths(measure, { transposingPart: partTranspose !== null });
+      const fifths = fifthsRaw === null ? currentFifths : fifthsRaw;
       const modeRaw = normalizeKeyMode(
         measure.querySelector(":scope > KeySig > mode")?.textContent
         ?? measure.querySelector(":scope > voice > KeySig > mode")?.textContent
@@ -1858,7 +1891,6 @@ export const convertMuseScoreToMusicXml = (
         measures: parsedMeasures,
       });
     }
-    const partTranspose = group.partEl ? readPartTransposeFromMusePart(group.partEl) : null;
     parsedByPart.push({ partId, partName: group.partName, transpose: partTranspose, staffs: parsedStaffs });
   }
 
@@ -3236,7 +3268,7 @@ export const exportMusicXmlDomToMuseScore = (doc: Document, options: MuseScoreEx
         return `<clef staff="${staffNo}">${museClef}</clef>`;
       })
       .join("");
-    const instrumentTransposeXml = `${Number.isFinite(partTranspose?.diatonic) ? `<transposeDiatonic>${Math.round(Number(partTranspose?.diatonic))}</transposeDiatonic><mksTransposeDiatonic>${Math.round(Number(partTranspose?.diatonic))}</mksTransposeDiatonic>` : ""}${Number.isFinite(partTranspose?.chromatic) ? `<transposeChromatic>${Math.round(Number(partTranspose?.chromatic))}</transposeChromatic><mksTransposeChromatic>${Math.round(Number(partTranspose?.chromatic))}</mksTransposeChromatic>` : ""}`;
+    const instrumentTransposeXml = `${Number.isFinite(partTranspose?.diatonic) ? `<transposeDiatonic>${Math.round(Number(partTranspose?.diatonic))}</transposeDiatonic>` : ""}${Number.isFinite(partTranspose?.chromatic) ? `<transposeChromatic>${Math.round(Number(partTranspose?.chromatic))}</transposeChromatic>` : ""}`;
     const instrumentNameXml = `<trackName>${xmlEscape(partName)}</trackName><longName>${xmlEscape(partName)}</longName>${partAbbreviation ? `<shortName>${xmlEscape(partAbbreviation)}</shortName>` : ""}`;
     const instrumentXml = `<Instrument>${instrumentNameXml}${instrumentClefXml}${instrumentTransposeXml}</Instrument>`;
     const partStaffDefsXml = staffIds
@@ -3371,7 +3403,7 @@ export const exportMusicXmlDomToMuseScore = (doc: Document, options: MuseScoreEx
               voiceXml += `<TimeSig>${cutSubtypeXml}<sigN>${effectiveMeasureBeats}</sigN><sigD>${effectiveMeasureBeatType}</sigD></TimeSig>`;
             }
             if (shouldWriteKey) {
-              voiceXml += `<KeySig><accidental>${measureFifths}</accidental></KeySig>`;
+              voiceXml += resolveMuseExportKeySigXml(measureFifths, partTranspose);
             }
             if (needsDoubleBarlineAtMeasureStart) {
               voiceXml += `<BarLine><subtype>double</subtype></BarLine>`;
