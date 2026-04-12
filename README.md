@@ -1,50 +1,52 @@
 # mikuscore-skills
 
-`mikuscore` 向けの Agent Skill を管理するリポジトリ。
+この Agent Skills を使うと、生成 AI と `mikuscore` を組み合わせて、音楽データや譜面を扱う作業を進めやすくなります。
 
-このリポジトリには、OpenAI Codex で使う `mikuscore` skill 本体、関連参照文書、配布用 bundle 作成スクリプトを含む。
+特に、次のようなことを期待しています。
 
-## 主な場所
+- `ABC` を起点に、音楽系の各種フォーマットを作る
+- `ABC`、`MusicXML`、`MIDI`、`MuseScore` などの相互変換を進める
+- 譜面の画像生成や表示用出力につなげる
+- `mikuscore` 前提の変換方針や制約を、生成 AI に渡しやすくする
 
-- `skills/mikuscore/`
-  - skill 本体
-- `docs/agent-skill-design.md`
-  - 設計メモ
-- `docs/development.md`
-  - 開発メモ
-- `vendor/mikuscore/`
-  - upstream `mikuscore` 参照コピー
+## インストールとローカル確認
 
-## 主なコマンド
+### ふつうに使う場合
+
+ふつうに使う場合は、生成した skill を自分の Codex home 配下の `skills/` に配置して使います。
+
+配布用 bundle を作るには、たとえば次を使います。
 
 ```bash
-npm test
-npm run install:local
 npm run build:bundle
 ```
 
-- `npm test`
-  - skill 構成の整合性確認
-- `npm run install:local`
-  - `skills/mikuscore` を repo-local `.codex/skills/mikuscore` へ同期
-- `npm run build:bundle`
-  - 配布用 bundle を `bundle/mikuscore-skills/` に生成
+生成された `bundle/mikuscore-skills/` の中身を、自分の Codex home 配下へコピーして使います。
+配置先は通常、各ツールの home 配下にある `skills/` 以下です。たとえば次のような配置を想定します。
 
-## OpenAI Codex でのローカル検証
+- Codex: `~/.codex/skills/mikuscore`
+- GitHub Copilot: `~/.copilot/skills/mikuscore`
+- Claude: `~/.claude/skills/mikuscore`
 
-この repo では、OpenAI Codex の repo-local `.codex/skills` を検証先として使う。
+### この repo の中で確認する場合
 
-一般の ABC 作曲や下書きは `mikuscore` を呼ばずに進め、`mikuscore` 固有の変換や handoff を使いたい段階でだけ `mikuscore` を明示する。
-
-基本手順:
+開発中にこの repo の中だけで確認したい場合は、repo-local の `.codex/skills/mikuscore` へ同期できます。
 
 ```bash
 npm test
 npm run install:local
 ```
 
-その後、新しい Codex セッションで `mikuscore` を明示したプロンプトを使って発火確認を行う。
+- `npm test`
+  - skill の構成確認
+- `npm run install:local`
+  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` へ同期
 
-`mikuscore` を呼び出した後に生成物を repo に保存する場合は、`skills/mikuscore/` ではなく、repo 直下の `mikuscore/` を保存先として扱う。
+その後、新しい Codex セッションで `mikuscore` を明示して試します。
 
-詳細は [docs/development.md](docs/development.md) を参照。
+## 詳細
+
+細かい運用や開発向けの説明は、次の文書にまとめています。
+
+- [docs/development.md](docs/development.md)
+- [docs/agent-skill-design.md](docs/agent-skill-design.md)
