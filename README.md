@@ -2,6 +2,8 @@
 
 この Agent Skills を使うと、生成 AI と `mikuscore` を組み合わせて、音楽データや譜面を扱う作業を進めやすくなります。
 
+![mikuscore OGP](docs/images/mikuscore-ogp.png)
+
 特に、次のようなことを期待しています。
 
 - `ABC` を起点に、音楽系の各種フォーマットを作る
