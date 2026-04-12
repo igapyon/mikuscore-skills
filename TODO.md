@@ -1,5 +1,12 @@
 # TODO
 
+## Recent Documentation Updates
+
+- [x] Fix `.gitignore` so repo-root `/mikuscore/` is ignored without also ignoring `skills/mikuscore/`.
+- [x] Add `ABC Quick Handling` guidance to `skills/mikuscore/references/workflow/composition-and-output.md`.
+- [x] Clarify that repo-root `mikuscore/` is the default working location only when the workflow needs repository files and the user did not specify another location.
+- [x] Add `docs/images/mikuscore-ogp.png` to `README.md`.
+
 ## Upstream Follow-up
 
 - [ ] Report the remaining upstream-compatible fix that is still applied locally to vendored `mikuscore`.
