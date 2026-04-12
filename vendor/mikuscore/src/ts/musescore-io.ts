@@ -135,7 +135,9 @@ const readFirstVBoxTextByStyle = (score: Element, styleName: string): string => 
   const textNodes: Element[] = [];
   for (const staff of directChildrenByTag(score, "Staff")) {
     for (const vbox of directChildrenByTag(staff, "VBox")) {
-      textNodes.push(...directChildrenByTag(vbox, "Text"));
+      for (const textNode of directChildrenByTag(vbox, "Text")) {
+        textNodes.push(textNode);
+      }
     }
   }
   for (const textNode of textNodes) {
