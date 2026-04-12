@@ -1,0 +1,17 @@
+{
+  "name": "mikuscore-skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent Skills for mikuscore",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "npm run build:upstream && npm test && npm run build:bundle:zip",
+    "build:bundle": "node scripts/build-skill-bundle.mjs",
+    "build:bundle:zip": "npm run build:bundle && node scripts/build-skill-bundle-zip.mjs",
+    "build:full": "npm run build",
+    "build:upstream": "npm --prefix vendor/mikuscore run build",
+    "install:local": "node scripts/install-local-skill.mjs",
+    "test": "node scripts/check-skill-structure.mjs"
+  }
+}
