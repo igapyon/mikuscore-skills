@@ -24,7 +24,7 @@ npm run build:bundle
 ```
 
 生成された `bundle/mikuscore-skills/skills/mikuscore` を、自分の Codex home 配下の `skills/` へコピーして使います。
-この bundle には `skills/mikuscore/vendor/mikuscore` が同梱されます。
+この bundle には `skills/mikuscore/vendor/mikuscore` と、その runtime に必要な `skills/mikuscore/vendor/mikuscore/node_modules` が同梱されます。
 つまり `skills/mikuscore` ディレクトリ単体を配布先へコピーしても、参照に必要な `mikuscore` 本体が一緒に入る構成です。
 
 配置イメージ:
@@ -42,6 +42,7 @@ npm run build:bundle
           src/
           docs/
           scripts/
+          node_modules/
 ```
 
 配置先は通常、各ツールの home 配下にある `skills/` 以下です。たとえば次のような配置を想定します。
@@ -61,8 +62,9 @@ npm run install:local
 
 - `npm test`
   - skill の構成確認
+  - bundle を孤立ディレクトリへ展開した状態で CLI 変換が起動することの smoke test
 - `npm run install:local`
-  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` へ同期し、`vendor/mikuscore` も skill 配下へ同梱
+  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` へ同期し、`vendor/mikuscore` と runtime 用 `node_modules` も skill 配下へ同梱
 
 その後、新しい Codex セッションで `mikuscore` を明示して試します。
 

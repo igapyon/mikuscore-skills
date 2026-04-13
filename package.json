@@ -12,6 +12,6 @@
     "build:full": "npm run build",
     "build:upstream": "npm --prefix vendor/mikuscore run build",
     "install:local": "node scripts/install-local-skill.mjs",
-    "test": "node scripts/check-skill-structure.mjs"
+    "test": "node scripts/check-skill-structure.mjs && node scripts/test-bundle-isolated.mjs"
   }
 }
