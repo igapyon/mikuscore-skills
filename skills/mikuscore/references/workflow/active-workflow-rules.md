@@ -1,24 +1,29 @@
 # Active Workflow Rules
 
-Use this reference when the skill is already active and you need follow-up handling rules.
+Use this reference when `mikuscore` is already active and the next request is a follow-up.
 
 ## Follow-up Handling
 
-- keep follow-up work inside `mikuscore` terms when that remains the most natural continuation
-- if the follow-up is really generic composition or plain `ABC` drafting without `mikuscore`-specific behavior, it is acceptable to step back out of the skill's specialized framing
-- prefer `convert`, `diagnostics`, `format-guidance`, and `workflow` handling over generic music-software advice
-- when multiple format names appear, identify `source` and `target` before giving conversion guidance
-- if the user already started from a `mikuscore` question, do not drift into generic notation-tool comparisons unless asked
+- treat follow-up requests as part of the same conversion-oriented workflow unless the user clearly exits that context
+- resolve short format words in `mikuscore` terms when that is the natural continuation
+- prefer `convert`, `render`, `diagnostics`, `format-guidance`, and `workflow` handling over generic music-software advice
+- if multiple format names appear, identify `source` and `target` before giving guidance or executing the step
+- if the user already started from a `mikuscore` request, do not drift into generic notation-tool comparisons unless asked
+- do not turn a normal conversion or render request into a runtime-inspection task unless the actual runtime path has failed
 
-## MusicXML-First Discipline
+## Active-Context Discipline
 
-- explain format pairs through `MusicXML` when that matches `mikuscore`'s product model
-- keep `MusicXML` as the canonical internal score source
-- for current generative-AI full-score handoff, prefer `ABC` because upstream policy defines `ABC` as the current AI-facing interchange layer
-- do not promise textual XML identity; preserve the distinction between semantic preservation and textual non-guarantees
+- keep intermediate `ABC` and `MusicXML` internal when possible
+- do not ask the user to manually pass an intermediate file back into the same active workflow if the runtime can continue internally
+- if a visible final deliverable and an intermediate artifact are both possible, prefer the final deliverable unless the user explicitly wants the intermediate file
+- keep progress updates short during straightforward conversions
 
 ## Product Boundary Discipline
 
-- do not answer a `mikuscore` workflow question as though the user asked about a generic DAW or engraving suite
+- explain format pairs through `MusicXML` when that matches the `mikuscore` product model
+- keep `MusicXML` as the canonical internal score source
+- keep `ABC` as the current AI-facing full-score boundary
+- do not promise textual XML identity
 - do not erase `experimental` labels from `MEI` or `LilyPond`
-- do not overstate compressed `mscz` CLI support when docs scope the CLI to `.mscx`-style text
+- do not overstate compressed `.mscz` CLI support when the docs scope the CLI to `.mscx`-style text
+- do not answer a `mikuscore` workflow question as though the user asked about a generic DAW or engraving suite

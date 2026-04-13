@@ -1,33 +1,59 @@
 # mikuscore-skills
 
-この Agent Skills を使うと、生成 AI と `mikuscore` を組み合わせて、音楽データや譜面を扱う作業を進めやすくなります。
+`mikuscore-skills` is an Agent Skills repository for working with `mikuscore` as a score conversion and rendering engine.
 
-![mikuscore OGP](docs/images/mikuscore-ogp.png)
+The main user-facing idea is simple:
 
-特に、次のようなことを期待しています。
+- say `mikuscore` explicitly
+- let the agent keep the conversion flow inside `mikuscore`
+- get back the generated file or the concrete diagnostics result
 
-- `ABC` を起点に、音楽系の各種フォーマットを作る
-- `ABC`、`MusicXML`、`MIDI`、`MuseScore` などの相互変換を進める
-- 譜面の画像生成や表示用出力につなげる
-- `mikuscore` 前提の変換方針や制約を、生成 AI に渡しやすくする
+This repository is centered on [`skills/mikuscore`](./skills/mikuscore).
 
-## インストールとローカル確認
+## What It Is For
 
-### ふつうに使う場合
+Typical uses:
 
-ふつうに使う場合は、生成した bundle の内容を自分の Codex home 配下へそのまま配置して使います。
+- convert `ABC`, `MusicXML`, `MIDI`, and `MuseScore` data through documented `mikuscore` routes
+- render score material to `SVG`
+- explain `mikuscore`-specific diagnostics and conversion-loss behavior
+- keep AI-facing full-score handoff aligned with the current `ABC` policy while keeping canonical score handling aligned with `MusicXML`
 
-配布用 bundle を作るには、たとえば次を使います。
+This repository is not trying to replace the `mikuscore` browser UI or turn the skill into a generic notation assistant.
+
+## How To Invoke It
+
+In conversation, start by naming `mikuscore`.
+
+Examples:
+
+- `mikuscore で ABC から MusicXML に変換して`
+- `mikuscore でこの譜面を SVG にして`
+- `mikuscore で MIDI から MusicXML にしたい`
+- `mikuscore の diagnostics の見方を教えて`
+- `mikuscore の AI handoff はなぜ ABC なの?`
+
+## Install And Local Verification
+
+### Normal Install
+
+Build a distributable bundle:
 
 ```bash
 npm run build:bundle
 ```
 
-生成された `bundle/mikuscore-skills/skills/mikuscore` を、自分の Codex home 配下の `skills/` へコピーして使います。
-この bundle には `skills/mikuscore/vendor/mikuscore` と、その runtime に必要な `skills/mikuscore/vendor/mikuscore/node_modules` が同梱されます。
-つまり `skills/mikuscore` ディレクトリ単体を配布先へコピーしても、参照に必要な `mikuscore` 本体が一緒に入る構成です。
+Then place the generated bundle contents under your skill home root.
 
-配置イメージ:
+This bundle includes:
+
+- `skills/mikuscore`
+- `skills/mikuscore/vendor/mikuscore`
+- `skills/mikuscore/vendor/mikuscore/node_modules` for runtime use
+
+That means the installed `skills/mikuscore` directory is intended to be self-contained enough to find its vendored runtime.
+
+Expected layout:
 
 ```text
 <skill-home>/
@@ -39,38 +65,40 @@ npm run build:bundle
       vendor/
         mikuscore/
           README.md
-          src/
           docs/
           scripts/
+          src/
           node_modules/
 ```
 
-配置先は通常、各ツールの home 配下にある `skills/` 以下です。たとえば次のような配置を想定します。
+Typical skill-home locations:
 
 - Codex: `~/.codex/skills/mikuscore`
 - GitHub Copilot: `~/.copilot/skills/mikuscore`
 - Claude: `~/.claude/skills/mikuscore`
 
-### この repo の中で確認する場合
+### Repo-Local Verification
 
-開発中にこの repo の中だけで確認したい場合は、repo-local の `.codex/skills/mikuscore` へ同期できます。
+For local validation inside this repository:
 
 ```bash
 npm test
 npm run install:local
 ```
 
-- `npm test`
-  - skill の構成確認
-  - bundle を孤立ディレクトリへ展開した状態で CLI 変換が起動することの smoke test
-- `npm run install:local`
-  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` へ同期し、`vendor/mikuscore` と runtime 用 `node_modules` も skill 配下へ同梱
+`npm test` verifies:
 
-その後、新しい Codex セッションで `mikuscore` を明示して試します。
+- skill structure
+- isolated bundle execution
+- vendored CLI conversion smoke behavior
 
-## 詳細
+`npm run install:local` syncs the skill into repo-local `.codex/skills/mikuscore` and includes the vendored runtime and runtime dependencies inside the skill directory.
 
-細かい運用や開発向けの説明は、次の文書にまとめています。
+After that, start a new Codex session and invoke `mikuscore` explicitly.
+
+## Documents
+
+For repository-specific development notes:
 
 - [docs/development.md](docs/development.md)
 - [docs/agent-skill-design.md](docs/agent-skill-design.md)
