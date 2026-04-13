@@ -15,7 +15,7 @@
 
 ### ふつうに使う場合
 
-ふつうに使う場合は、生成した skill を自分の Codex home 配下の `skills/` に配置して使います。
+ふつうに使う場合は、生成した bundle の内容を自分の Codex home 配下へそのまま配置して使います。
 
 配布用 bundle を作るには、たとえば次を使います。
 
@@ -23,7 +23,27 @@
 npm run build:bundle
 ```
 
-生成された `bundle/mikuscore-skills/` の中身を、自分の Codex home 配下へコピーして使います。
+生成された `bundle/mikuscore-skills/skills/mikuscore` を、自分の Codex home 配下の `skills/` へコピーして使います。
+この bundle には `skills/mikuscore/vendor/mikuscore` が同梱されます。
+つまり `skills/mikuscore` ディレクトリ単体を配布先へコピーしても、参照に必要な `mikuscore` 本体が一緒に入る構成です。
+
+配置イメージ:
+
+```text
+<skill-home>/
+  skills/
+    mikuscore/
+      SKILL.md
+      agents/
+      references/
+      vendor/
+        mikuscore/
+          README.md
+          src/
+          docs/
+          scripts/
+```
+
 配置先は通常、各ツールの home 配下にある `skills/` 以下です。たとえば次のような配置を想定します。
 
 - Codex: `~/.codex/skills/mikuscore`
@@ -42,7 +62,7 @@ npm run install:local
 - `npm test`
   - skill の構成確認
 - `npm run install:local`
-  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` へ同期
+  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` へ同期し、`vendor/mikuscore` も skill 配下へ同梱
 
 その後、新しい Codex セッションで `mikuscore` を明示して試します。
 

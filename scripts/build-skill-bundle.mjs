@@ -11,24 +11,29 @@ const repoRoot = path.resolve(__dirname, "..");
 const bundleRoot = path.resolve(repoRoot, "bundle/mikuscore-skills");
 const bundleSkillsRoot = path.resolve(bundleRoot, "skills");
 const sourceSkillRoot = path.resolve(repoRoot, "skills/mikuscore");
+const upstreamRoot = path.resolve(repoRoot, "vendor/mikuscore");
+const bundleSkillRoot = path.resolve(bundleSkillsRoot, "mikuscore");
+const bundleSkillVendorRoot = path.resolve(bundleSkillRoot, "vendor");
 
 main();
 
 function main() {
   ensureSourceExists(sourceSkillRoot, "skills/mikuscore");
+  ensureSourceExists(upstreamRoot, "vendor/mikuscore");
 
   fs.rmSync(bundleRoot, { recursive: true, force: true });
   fs.mkdirSync(bundleSkillsRoot, { recursive: true });
 
-  fs.cpSync(sourceSkillRoot, path.resolve(bundleSkillsRoot, "mikuscore"), {
-    recursive: true
-  });
+  fs.cpSync(sourceSkillRoot, bundleSkillRoot, { recursive: true });
+  fs.mkdirSync(bundleSkillVendorRoot, { recursive: true });
+  fs.cpSync(upstreamRoot, path.resolve(bundleSkillVendorRoot, "mikuscore"), { recursive: true });
 
   process.stdout.write([
     "[build:bundle] generated bundle/mikuscore-skills",
     "[build:bundle] copy this directory's contents under your skill home root",
     "[build:bundle] included:",
-    "  - skills/mikuscore"
+    "  - skills/mikuscore",
+    "  - skills/mikuscore/vendor/mikuscore"
   ].join("\n"));
   process.stdout.write("\n");
 }
