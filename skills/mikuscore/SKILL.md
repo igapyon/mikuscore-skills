@@ -65,7 +65,7 @@ Primary workflow categories:
 
 ## Runtime Discipline
 
-When the user explicitly asks `mikuscore` to convert, render, or generate files, do not begin with broad repository exploration.
+For explicit `mikuscore` convert/render requests, first attempt the vendored CLI or documented vendored runtime flow before broad repository exploration or generic tool discovery.
 
 Use this order:
 
