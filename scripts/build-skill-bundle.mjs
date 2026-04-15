@@ -11,24 +11,44 @@ const repoRoot = path.resolve(__dirname, "..");
 const bundleRoot = path.resolve(repoRoot, "bundle/mikuscore-skills");
 const bundleSkillsRoot = path.resolve(bundleRoot, "skills");
 const sourceSkillRoot = path.resolve(repoRoot, "skills/mikuscore");
+const upstreamRoot = path.resolve(repoRoot, "vendor/mikuscore");
+const upstreamPackageLockPath = path.resolve(upstreamRoot, "package-lock.json");
+const upstreamNodeModulesRoot = path.resolve(upstreamRoot, "node_modules");
+const bundleSkillRoot = path.resolve(bundleSkillsRoot, "mikuscore");
+const bundleSkillVendorRoot = path.resolve(bundleSkillRoot, "vendor");
+const bundledUpstreamRoot = path.resolve(bundleSkillVendorRoot, "mikuscore");
+const bundledUpstreamNodeModulesRoot = path.resolve(bundledUpstreamRoot, "node_modules");
 
 main();
 
 function main() {
   ensureSourceExists(sourceSkillRoot, "skills/mikuscore");
+  ensureSourceExists(upstreamRoot, "vendor/mikuscore");
+  ensureSourceExists(upstreamPackageLockPath, "vendor/mikuscore/package-lock.json");
+  ensureSourceExists(upstreamNodeModulesRoot, "vendor/mikuscore/node_modules");
 
   fs.rmSync(bundleRoot, { recursive: true, force: true });
   fs.mkdirSync(bundleSkillsRoot, { recursive: true });
 
-  fs.cpSync(sourceSkillRoot, path.resolve(bundleSkillsRoot, "mikuscore"), {
-    recursive: true
+  fs.cpSync(sourceSkillRoot, bundleSkillRoot, { recursive: true });
+  fs.mkdirSync(bundleSkillVendorRoot, { recursive: true });
+  fs.cpSync(upstreamRoot, bundledUpstreamRoot, {
+    recursive: true,
+    filter(sourcePath) {
+      const relativePath = path.relative(upstreamRoot, sourcePath);
+      if (!relativePath) return true;
+      return !relativePath.split(path.sep).includes("node_modules");
+    }
   });
+  copyRuntimeDependencies();
 
   process.stdout.write([
     "[build:bundle] generated bundle/mikuscore-skills",
     "[build:bundle] copy this directory's contents under your skill home root",
     "[build:bundle] included:",
-    "  - skills/mikuscore"
+    "  - skills/mikuscore",
+    "  - skills/mikuscore/vendor/mikuscore",
+    "  - skills/mikuscore/vendor/mikuscore/node_modules (runtime only)"
   ].join("\n"));
   process.stdout.write("\n");
 }
@@ -37,4 +57,44 @@ function ensureSourceExists(targetPath, label) {
   if (!fs.existsSync(targetPath)) {
     throw new Error(`missing source directory: ${label}`);
   }
+}
+
+function copyRuntimeDependencies() {
+  const packageLock = JSON.parse(fs.readFileSync(upstreamPackageLockPath, "utf8"));
+  const packages = packageLock.packages || {};
+  const requiredPackages = collectRequiredPackages(packages, ["jsdom", "typescript"]);
+
+  fs.mkdirSync(bundledUpstreamNodeModulesRoot, { recursive: true });
+  for (const packageName of requiredPackages) {
+    const sourceDir = path.resolve(upstreamNodeModulesRoot, packageName);
+    ensureSourceExists(sourceDir, `vendor/mikuscore/node_modules/${packageName}`);
+    fs.cpSync(sourceDir, path.resolve(bundledUpstreamNodeModulesRoot, packageName), {
+      recursive: true
+    });
+  }
+}
+
+function collectRequiredPackages(packages, roots) {
+  const pending = [...roots];
+  const required = new Set();
+
+  while (pending.length > 0) {
+    const packageName = pending.pop();
+    if (!packageName || required.has(packageName)) {
+      continue;
+    }
+
+    const packageKey = `node_modules/${packageName}`;
+    const packageInfo = packages[packageKey];
+    if (!packageInfo) {
+      throw new Error(`vendor/mikuscore/package-lock.json missing entry for ${packageKey}`);
+    }
+
+    required.add(packageName);
+    for (const dependencyName of Object.keys(packageInfo.dependencies || {})) {
+      pending.push(dependencyName);
+    }
+  }
+
+  return Array.from(required).sort((left, right) => left.localeCompare(right));
 }

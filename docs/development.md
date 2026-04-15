@@ -54,6 +54,8 @@ npm run install:local
 ```
 
 `npm run install:local` は `skills/mikuscore` を `.codex/skills/mikuscore` へ同期する。
+このとき `vendor/mikuscore` も `.codex/skills/mikuscore/vendor/mikuscore` として同梱する。
+加えて、CLI runtime が孤立環境でも起動できるよう、`vendor/mikuscore/node_modules` から必要な runtime 依存だけを skill 配下へ同梱する。
 この同期はローカル検証用の明示操作として扱い、`npm run build` や bundle build の一部には含めない。
 
 `mikuscore` を呼び出した後に生成した曲断片や handoff 用の保存物は、`skills/mikuscore/` ではなく、repo 直下の `mikuscore/` を保存先として扱う。
@@ -68,6 +70,27 @@ npm run install:local
 
 ```bash
 npm run build:bundle
+```
+
+配布用 bundle には `skills/mikuscore` 本体に加えて、`skills/mikuscore/vendor/mikuscore` として `vendor/mikuscore` を丸ごと同梱する。
+さらに `skills/mikuscore/vendor/mikuscore/node_modules` として、少なくとも `jsdom` と `typescript` を含む runtime 依存を同梱する。
+利用側では `bundle/mikuscore-skills/skills/mikuscore` ディレクトリ単体を配置しても self-contained に参照できる状態を前提とする。
+
+配置イメージ:
+
+```text
+skills/
+  mikuscore/
+    SKILL.md
+    agents/
+    references/
+    vendor/
+      mikuscore/
+        README.md
+        src/
+        docs/
+        scripts/
+        node_modules/
 ```
 
 `npm run build` 系は build と検証に限定し、repo-local `.codex` へのコピーは副作用として実行しない。

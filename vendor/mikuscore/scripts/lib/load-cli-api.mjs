@@ -99,10 +99,12 @@ function ensureCompiledCache(rootDir) {
   fs.rmSync(cacheDir, { recursive: true, force: true });
   fs.mkdirSync(cacheDir, { recursive: true });
   fs.writeFileSync(packageJsonPath, JSON.stringify({ type: "commonjs" }), "utf8");
+  const typeScriptCliPath = resolveTypeScriptCli(rootDir);
 
   const result = spawnSync(
-    "tsc",
+    process.execPath,
     [
+      typeScriptCliPath,
       "--pretty",
       "false",
       "--module",
@@ -133,6 +135,18 @@ function ensureCompiledCache(rootDir) {
 
   fs.copyFileSync(path.resolve(rootDir, VEROVIO_JS), verovioCjsPath);
   return cacheDir;
+}
+
+function resolveTypeScriptCli(rootDir) {
+  const requireFromRoot = createRequire(path.join(rootDir, "package.json"));
+
+  try {
+    return requireFromRoot.resolve("typescript/bin/tsc");
+  } catch {
+    throw new Error(
+      "Cannot resolve typescript/bin/tsc from the mikuscore runtime. Install or bundle vendor/mikuscore/node_modules."
+    );
+  }
 }
 
 function installWindowGlobals(window) {

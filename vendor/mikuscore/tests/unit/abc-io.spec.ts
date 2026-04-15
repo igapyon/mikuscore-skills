@@ -221,6 +221,83 @@ C3/ D | [CE]3/ G | {/g3/}a2 z2 |`;
     expect(Number(soundTempo)).toBe(220);
   });
 
+  it("MusicXML->ABC exports metronome beat unit into Q header", () => {
+    const xmlWithHalfTempo = `<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1">
+  <part-list>
+    <score-part id="P1"><part-name>Part 1</part-name></score-part>
+  </part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes>
+        <divisions>480</divisions>
+        <key><fifths>0</fifths></key>
+        <time><beats>4</beats><beat-type>4</beat-type></time>
+        <clef><sign>G</sign><line>2</line></clef>
+      </attributes>
+      <direction>
+        <direction-type>
+          <metronome>
+            <beat-unit>half</beat-unit>
+            <per-minute>72</per-minute>
+          </metronome>
+        </direction-type>
+        <sound tempo="144"/>
+      </direction>
+      <note><rest/><duration>1920</duration><voice>1</voice><type>whole</type></note>
+    </measure>
+  </part>
+</score-partwise>`;
+    const srcDoc = parseMusicXmlDocument(xmlWithHalfTempo);
+    expect(srcDoc).not.toBeNull();
+    if (!srcDoc) return;
+
+    const abc = exportMusicXmlDomToAbc(srcDoc);
+    expect(abc).toContain("Q:1/2=72");
+
+    const roundtripXml = convertAbcToMusicXml(abc);
+    const outDoc = parseMusicXmlDocument(roundtripXml);
+    expect(outDoc).not.toBeNull();
+    if (!outDoc) return;
+
+    const soundTempo = outDoc.querySelector("part > measure > direction > sound")?.getAttribute("tempo");
+    expect(Number(soundTempo)).toBe(144);
+  });
+
+  it("MusicXML->ABC prefers the last leading tempo in measure 1 when multiple tempo directions exist", () => {
+    const xmlWithCompetingTempo = `<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1">
+  <part-list>
+    <score-part id="P1"><part-name>Part 1</part-name></score-part>
+  </part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes>
+        <divisions>480</divisions>
+        <key><fifths>0</fifths></key>
+        <time><beats>4</beats><beat-type>4</beat-type></time>
+        <clef><sign>G</sign><line>2</line></clef>
+      </attributes>
+      <direction>
+        <direction-type><words>Allegretto moderato</words></direction-type>
+        <sound tempo="116"/>
+      </direction>
+      <direction>
+        <sound tempo="90"/>
+      </direction>
+      <note><rest/><duration>1920</duration><voice>1</voice><type>whole</type></note>
+    </measure>
+  </part>
+</score-partwise>`;
+    const srcDoc = parseMusicXmlDocument(xmlWithCompetingTempo);
+    expect(srcDoc).not.toBeNull();
+    if (!srcDoc) return;
+
+    const abc = exportMusicXmlDomToAbc(srcDoc);
+    expect(abc).toContain("Q:1/4=90");
+    expect(abc).not.toContain("Q:1/4=116");
+  });
+
   it("roundtrip of same-staff multi-voice score should not trigger MEASURE_OVERFULL", () => {
     const multiVoiceXml = `<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="3.1">
@@ -1129,6 +1206,98 @@ V:2 name="Lower"
     expect(lowerNotes).toEqual(["E", "F", "B", "C"]);
     expect(outDoc.querySelector('part-list > score-part[id="P1"] > part-name')?.textContent?.trim()).toBe("Upper");
     expect(outDoc.querySelector('part-list > score-part[id="P2"] > part-name')?.textContent?.trim()).toBe("Lower");
+    expect(outDoc.querySelector('miscellaneous-field[name="mks:diag:count"]')).toBeNull();
+  });
+
+  it("ABC->MusicXML maps %%score grouped voices into one multi-staff part", () => {
+    const abc = `X:1
+T:Grand staff from %%score
+M:4/4
+L:1/4
+K:C
+%%score (1 2)
+V:1 name="Upper" clef=treble
+V:2 name="Lower" clef=bass
+[V:1] C D E F |
+[V:2] C, D, E, F, |`;
+
+    const xml = convertAbcToMusicXml(abc);
+    const outDoc = parseMusicXmlDocument(xml);
+    expect(outDoc).not.toBeNull();
+    if (!outDoc) return;
+
+    expect(outDoc.querySelectorAll("part").length).toBe(1);
+    expect(outDoc.querySelector("part > measure > attributes > staves")?.textContent?.trim()).toBe("2");
+    expect(outDoc.querySelector('part > measure > attributes > clef[number="1"] > sign')?.textContent?.trim()).toBe("G");
+    expect(outDoc.querySelector('part > measure > attributes > clef[number="2"] > sign')?.textContent?.trim()).toBe("F");
+    expect(outDoc.querySelector("part > measure > backup > duration")?.textContent?.trim()).toBe("3840");
+    expect(Array.from(outDoc.querySelectorAll("part > measure > note > staff")).map((node) => node.textContent?.trim())).toEqual([
+      "1", "1", "1", "1", "2", "2", "2", "2"
+    ]);
+    expect(outDoc.querySelector('part-list > score-part[id="P1"] > part-name')?.textContent?.trim()).toBe("Upper / Lower");
+    expect(outDoc.querySelector('miscellaneous-field[name="mks:diag:count"]')).toBeNull();
+  });
+
+  it("ABC->MusicXML keeps %%score grouped voices aligned across multiple measures", () => {
+    const abc = `X:1
+T:Grand staff multi-measure from %%score
+M:4/4
+L:1/4
+K:C
+%%score (1 2)
+V:1 name="Upper" clef=treble
+V:2 name="Lower" clef=bass
+[V:1] C D E F | G A B c |
+[V:2] C, D, E, F, | G, A, B, C |`;
+
+    const xml = convertAbcToMusicXml(abc);
+    const outDoc = parseMusicXmlDocument(xml);
+    expect(outDoc).not.toBeNull();
+    if (!outDoc) return;
+
+    const measures = Array.from(outDoc.querySelectorAll("part > measure"));
+    expect(measures).toHaveLength(2);
+    expect(Array.from(outDoc.querySelectorAll("part > measure > backup > duration")).map((node) => node.textContent?.trim())).toEqual([
+      "3840",
+      "3840",
+    ]);
+    expect(
+      measures.map((measure) =>
+        Array.from(measure.querySelectorAll(":scope > note > staff")).map((node) => node.textContent?.trim())
+      )
+    ).toEqual([
+      ["1", "1", "1", "1", "2", "2", "2", "2"],
+      ["1", "1", "1", "1", "2", "2", "2", "2"],
+    ]);
+    expect(outDoc.querySelector('miscellaneous-field[name="mks:diag:count"]')).toBeNull();
+  });
+
+  it("ABC->MusicXML restores repeat and ending markers on grouped %%score import", () => {
+    const abc = `X:1
+T:Grand staff alternate endings
+M:4/4
+L:1/4
+K:C
+%%score (1 2)
+V:1 name="Upper" clef=treble
+V:2 name="Lower" clef=bass
+[V:1] |: C D E F |1 G A B c :|2 c B A G |
+[V:2] |: C, D, E, F, |1 G, A, B, C :|2 C B, A, G, |`;
+
+    const xml = convertAbcToMusicXml(abc);
+    const outDoc = parseMusicXmlDocument(xml);
+    expect(outDoc).not.toBeNull();
+    if (!outDoc) return;
+
+    expect(outDoc.querySelectorAll("part")).toHaveLength(1);
+    expect(outDoc.querySelector("part > measure > attributes > staves")?.textContent?.trim()).toBe("2");
+    expect(outDoc.querySelectorAll("part > measure > backup")).toHaveLength(3);
+    expect(outDoc.querySelector('part > measure[number="1"] > barline[location="left"] > repeat')?.getAttribute("direction")).toBe("forward");
+    expect(outDoc.querySelector('part > measure[number="2"] > barline[location="left"] > ending')?.getAttribute("number")).toBe("1");
+    expect(outDoc.querySelector('part > measure[number="2"] > barline[location="right"] > repeat')?.getAttribute("direction")).toBe("backward");
+    expect(outDoc.querySelector('part > measure[number="2"] > barline[location="right"] > ending')?.getAttribute("number")).toBe("1");
+    expect(outDoc.querySelector('part > measure[number="3"] > barline[location="left"] > ending')?.getAttribute("number")).toBe("2");
+    expect(outDoc.querySelector('part > measure[number="3"] > barline[location="right"] > ending')?.getAttribute("number")).toBe("2");
     expect(outDoc.querySelector('miscellaneous-field[name="mks:diag:count"]')).toBeNull();
   });
 

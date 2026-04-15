@@ -1,25 +1,40 @@
 # References Index
 
-Use this index when you need detailed guidance beyond the core rules in `SKILL.md`.
+Use this index only when the core contract in `SKILL.md` is not enough.
+The goal of these references is operational consistency, not broad background reading.
 
 ## Workflow
 
 - [workflow/active-workflow-rules.md](workflow/active-workflow-rules.md)
   - follow-up handling
-  - source/target clarification
-  - product-boundary discipline
+  - active-context discipline
+  - boundary control
+- [workflow/conversion-routing.md](workflow/conversion-routing.md)
+  - route selection
+  - short format follow-ups
+  - CLI-first conversion rules
 - [workflow/composition-and-output.md](workflow/composition-and-output.md)
   - composition scope
-  - working file placement
-  - output style for generated files
+  - output-first response style
+  - handling `ABC` as an AI-facing draft layer
 - [workflow/diagnostics-handling.md](workflow/diagnostics-handling.md)
   - hard error vs soft warning
-  - diagnostics explanation rules
+  - preservation and loss explanation rules
+- [workflow/output-location-rules.md](workflow/output-location-rules.md)
+  - default output tree
+  - naming and placement rules
 
 ## Runtime
 
 - [runtime/operations-map.md](runtime/operations-map.md)
-  - operation list
-  - primary doc search order
+  - supported operation list
+  - document search order
 - [runtime/upstream-map.md](runtime/upstream-map.md)
-  - upstream file and doc locations under `vendor/mikuscore`
+  - vendored runtime locations
+  - CLI entrypoints
+  - primary upstream docs
+
+## Examples
+
+- [examples/file-workflow-examples.md](examples/file-workflow-examples.md)
+  - short `abc/musicxml/midi/svg` workflow examples
