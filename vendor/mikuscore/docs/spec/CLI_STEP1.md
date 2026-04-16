@@ -110,11 +110,15 @@ Behavior:
 - `--in` specifies an input file path
 - if `--in` is omitted, the CLI MUST read from `stdin`
 - if neither file input nor `stdin` content is available, the CLI MUST fail clearly
+- for file input only, `musicxml` MAY read `.musicxml`, `.xml`, or `.mxl`
+- for file input only, `musescore` MAY read `.mscx` or `.mscz`
 
 ### Output Rule
 
 - `--out` specifies an output file path
 - if `--out` is omitted, the main result MUST be written to `stdout`
+- for file output only, `--to musicxml` MAY write compressed `.mxl` when the output path ends with `.mxl`
+- for file output only, `--to musescore` MAY write compressed `.mscz` when the output path ends with `.mscz`
 
 ### Help Rule
 
@@ -189,6 +193,8 @@ Options:
 - main conversion result MUST go to `stdout`
 - warnings, diagnostics, and summary text SHOULD go to `stderr`
 - binary output is out of Step 1 scope
+- compressed `.mxl` / `.mscz` support is limited to file-path I/O; `stdin` / `stdout` remain text-only for `musicxml` and `musescore`
+- plain-text decoding for `musicxml` / `musescore` CLI inputs SHOULD use UTF-8 decoding that is compatible with non-Node runtimes as well as Node-based execution
 
 ## Error Contract
 

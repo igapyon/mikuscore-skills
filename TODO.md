@@ -9,17 +9,13 @@
 
 ## Upstream Follow-up
 
-- [ ] Report the remaining upstream-compatible fix that is still applied locally to vendored `mikuscore`.
-  - Repro path:
-    - run `npm run build` in this repository
-    - this calls `npm --prefix vendor/mikuscore run build`
-  - Upstream sync note:
-    - the previous `flatMap` compatibility fix in `src/ts/musescore-io.ts` is now present upstream and no longer needs a local carry
-  - Remaining local fix:
-    - file: `vendor/mikuscore/scripts/lib/load-cli-api.mjs`
-    - upstream now has a compiled-cache implementation, but it still imports `typescript` at runtime
-    - local carry keeps the cache-oriented structure and replaces runtime `typescript` import usage with `tsc` CLI invocation
-    - reason: CLI tests fail with `ERR_MODULE_NOT_FOUND` for `typescript` during `load-cli-api.mjs`
-  - Verification result after current local fix:
+- [x] Reflect the current upstream sync state in the repo notes.
+  - Latest subtree sync:
+    - `vendor/mikuscore` was updated from `0617c7d5` to `94e9c216`
+  - Current state:
+    - there is no remaining repo-local carry in `vendor/mikuscore/`
+    - `vendor/mikuscore/src/ts/cli-api.ts` now uses `TextDecoder` in the upstream version itself
+    - `vendor/mikuscore/scripts/lib/load-cli-api.mjs` now uses the compiled-cache flow with `typescript/bin/tsc` resolution in the vendored upstream version
+  - Verification result:
     - `npm --prefix vendor/mikuscore run build` passes
     - root `npm run build` also passes and produces the skill bundle zip

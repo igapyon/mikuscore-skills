@@ -36,7 +36,10 @@ git subtree pull --prefix=vendor/mikuscore https://github.com/igapyon/mikuscore.
 最近の取り込みメモ:
 
 - `src/ts/musescore-io.ts` の ES2018 互換化は upstream に入っていたため、そのローカル carry は不要になった
-- `scripts/lib/load-cli-api.mjs` は upstream 更新後も `typescript` の runtime import で CLI build/test が落ちたため、この repo では `tsc` CLI 呼び出しベースの互換修正を引き続き保持している
+- 最新の subtree sync は `0617c7d5..94e9c216`
+- `scripts/lib/load-cli-api.mjs` の compiled-cache と `typescript/bin/tsc` 解決は、現在は vendored upstream 側の内容として入っている
+- `src/ts/cli-api.ts` の UTF-8 decode は、現在は upstream 側で `TextDecoder` ベースの実装になっている
+- 現在は `vendor/mikuscore/` に repo-local carry は残っていない
 - upstream 更新後は `npm --prefix vendor/mikuscore run build` と root `npm run build` の両方で確認する
 
 ## ローカル Skill 検証
