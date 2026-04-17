@@ -101,8 +101,15 @@ type CliCommandNormalizationResult =
   };
 
 type ResolvedMeasureNoteSelectorResult =
-  | { ok: true; nodeId: string; voice?: string | null }
-  | { ok: false; message: string };
+  | {
+    ok: true;
+    nodeId: string;
+    voice?: string | null;
+  }
+  | {
+    ok: false;
+    message: string;
+  };
 
 const isResolvedMeasureNoteSelectorFailure = (
   result: ResolvedMeasureNoteSelectorResult
