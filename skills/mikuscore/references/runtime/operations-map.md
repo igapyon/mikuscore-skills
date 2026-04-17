@@ -28,3 +28,4 @@ Prefer this document order:
 - prefer documented CLI/runtime behavior over repo exploration
 - prefer execution over explanation once the route is clear and supported
 - prefer concise warning reporting over abandoning the workflow on soft limitations
+- remember that current documented CLI conversion coverage extends beyond `ABC` / `MIDI` / `MuseScore` to include `ABC -> MIDI` and experimental `MEI` / `LilyPond` pairs

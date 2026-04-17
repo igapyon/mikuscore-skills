@@ -14,8 +14,13 @@ Use this reference when the user asks for conversion, rendering, or a short form
 
 - `ABC -> MusicXML`
 - `MusicXML -> ABC`
+- `ABC -> MIDI`
 - `MIDI -> MusicXML`
 - `MusicXML -> MIDI`
+- `MEI -> MusicXML`
+- `MusicXML -> MEI`
+- `LilyPond -> MusicXML`
+- `MusicXML -> LilyPond`
 - `MuseScore (.mscx-style text) -> MusicXML`
 - `MusicXML -> MuseScore (.mscx-style text)`
 - `MusicXML -> SVG`
@@ -31,6 +36,8 @@ Inside an active `mikuscore` workflow, short format requests should usually map 
 - `musicxml` -> export or normalize as `MusicXML`
 - `abc` -> export the current score as `ABC`
 - `midi` -> export the current score as `MIDI`
+- `mei` -> export the current score as `MEI`
+- `lilypond` or `ly` -> export the current score as `LilyPond`
 - `mscx` or `musescore` -> export the current score as text-style `MuseScore`
 
 If the request could mean either a visible final deliverable or an intermediate artifact, prefer the visible final deliverable unless the user explicitly asks to inspect the intermediate file.

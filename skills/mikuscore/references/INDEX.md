@@ -37,4 +37,4 @@ The goal of these references is operational consistency, not broad background re
 ## Examples
 
 - [examples/file-workflow-examples.md](examples/file-workflow-examples.md)
-  - short `abc/musicxml/midi/svg` workflow examples
+  - short `abc/musicxml/midi/mei/lilypond/svg` workflow examples

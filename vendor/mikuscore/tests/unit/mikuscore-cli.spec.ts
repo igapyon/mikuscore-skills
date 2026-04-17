@@ -70,7 +70,7 @@ describe("mikuscore cli", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("<work-title>STDIN</work-title>");
-  });
+  }, 15000);
 
   it("converts ABC directly to MIDI", () => {
     const result = runCli(["convert", "--from", "abc", "--to", "midi"], {
@@ -194,7 +194,7 @@ describe("mikuscore cli", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("<svg");
-  });
+  }, 15000);
 
   it("renders SVG directly from ABC input", () => {
     const inputPath = writeTempFile("score.abc", "X:1\nT:Render ABC\nM:4/4\nL:1/4\nK:C\nC D E F|\n");

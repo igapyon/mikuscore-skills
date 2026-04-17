@@ -84,8 +84,10 @@ For this repository:
 ## Conversion Discipline
 
 - identify `source` and `target` first
+- current documented CLI pairs include `ABC <-> MusicXML`, `ABC -> MIDI`, `MIDI -> MusicXML`, `MusicXML <-> MEI`, `MusicXML <-> LilyPond`, and `MusicXML <-> MuseScore`
+- keep `MEI` and `LilyPond` marked as experimental when explaining them
 - explain or execute routes through `MusicXML` when that matches the documented product model
-- resolve short follow-up format requests such as `svg`, `musicxml`, `abc`, `midi`, or `mscx` as `mikuscore` conversion or render requests when that is the natural continuation of the active workflow
+- resolve short follow-up format requests such as `svg`, `musicxml`, `abc`, `midi`, `mei`, `lilypond`, or `mscx` as `mikuscore` conversion or render requests when that is the natural continuation of the active workflow
 - when the user wants `SVG` from an `ABC`-friendly request, prefer `ABC -> MusicXML -> SVG` unless a better direct path is clearly documented
 - do not show raw intermediate `ABC` or `MusicXML` unless the user explicitly asks to inspect them or the runtime path has failed
 - do not turn a normal conversion request into a runtime-inspection task unless the actual conversion path has failed
