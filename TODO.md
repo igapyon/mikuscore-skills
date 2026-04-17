@@ -10,14 +10,11 @@
 ## Upstream Follow-up
 
 - [x] Reflect the current upstream sync state in the repo notes.
-  - Latest subtree sync on 2026-04-17:
-    - `vendor/mikuscore` was updated to upstream `devel` tip `10f541b6`
+  - Latest subtree sync on 2026-04-18:
+    - `vendor/mikuscore` was updated to upstream `devel` tip `d20c8abd`
   - Current state:
     - upstream CLI is now documented as `convert` / `render` / initial `state`
-    - `vendor/mikuscore/src/ts/cli-api.ts` still needs a small repo-local carry here for downstream compatibility
-    - the remaining carry is limited to:
-      - discriminated-union-safe `.message` access in selector normalization
-      - replacing `flatMap` with ES2018-compatible iteration for isolated bundle compilation
+    - no repo-local carry remains in `vendor/mikuscore/src/ts/cli-api.ts`
   - Verification result:
     - `npm --prefix vendor/mikuscore run build` passes
     - `npm run test` passes, including isolated bundle CLI conversion
