@@ -10,12 +10,15 @@
 ## Upstream Follow-up
 
 - [x] Reflect the current upstream sync state in the repo notes.
-  - Latest subtree sync:
-    - `vendor/mikuscore` was updated from `0617c7d5` to `94e9c216`
+  - Latest subtree sync on 2026-04-17:
+    - `vendor/mikuscore` was updated to upstream `devel` tip `10f541b6`
   - Current state:
-    - there is no remaining repo-local carry in `vendor/mikuscore/`
-    - `vendor/mikuscore/src/ts/cli-api.ts` now uses `TextDecoder` in the upstream version itself
-    - `vendor/mikuscore/scripts/lib/load-cli-api.mjs` now uses the compiled-cache flow with `typescript/bin/tsc` resolution in the vendored upstream version
+    - upstream CLI is now documented as `convert` / `render` / initial `state`
+    - `vendor/mikuscore/src/ts/cli-api.ts` still needs a small repo-local carry here for downstream compatibility
+    - the remaining carry is limited to:
+      - discriminated-union-safe `.message` access in selector normalization
+      - replacing `flatMap` with ES2018-compatible iteration for isolated bundle compilation
   - Verification result:
     - `npm --prefix vendor/mikuscore run build` passes
+    - `npm run test` passes, including isolated bundle CLI conversion
     - root `npm run build` also passes and produces the skill bundle zip
