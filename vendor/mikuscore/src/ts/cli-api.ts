@@ -110,19 +110,23 @@ const buildIndexedMeasureNotes = (xmlText: string): IndexedMeasureNote[] => {
     return `n${sequence}`;
   });
 
-  return Array.from(doc.querySelectorAll("score-partwise > part > measure")).flatMap((measure) => {
+  const indexedNotes: IndexedMeasureNote[] = [];
+
+  Array.from(doc.querySelectorAll("score-partwise > part > measure")).forEach((measure) => {
     const part = measure.parentElement;
     const partId = part?.getAttribute("id")?.trim() ?? null;
     const measureNumber = measure.getAttribute("number")?.trim() ?? "";
     const voiceNoteCounts = new Map<string, number>();
-    return Array.from(measure.querySelectorAll(":scope > note")).flatMap((note, noteIndex) => {
+
+    Array.from(measure.querySelectorAll(":scope > note")).forEach((note, noteIndex) => {
       const nodeId = nodeToId.get(note);
-      if (!nodeId) return [];
+      if (!nodeId) return;
       const voice = getVoiceText(note);
       const voiceKey = voice ?? "__none__";
       const nextVoiceNoteIndex = (voiceNoteCounts.get(voiceKey) ?? 0) + 1;
       voiceNoteCounts.set(voiceKey, nextVoiceNoteIndex);
-      return [{
+
+      indexedNotes.push({
         nodeId,
         selector: {
           part_id: partId,
@@ -131,9 +135,11 @@ const buildIndexedMeasureNotes = (xmlText: string): IndexedMeasureNote[] => {
           voice,
           voice_note_index: nextVoiceNoteIndex,
         },
-      }];
+      });
     });
   });
+
+  return indexedNotes;
 };
 
 const resolveMeasureNoteSelector = (
@@ -199,7 +205,7 @@ const normalizeCliCommandSelectors = (xmlText: string, command: CoreCommand): Cl
     if (!resolved.ok) {
       return {
         ok: false,
-        message: `Failed to resolve CLI command selector: ${resolved.message}`,
+        message: `Failed to resolve CLI command selector: ${"message" in resolved ? resolved.message : "unknown selector resolution error"}`,
       };
     }
     nextCommand.targetNodeId = resolved.nodeId;
@@ -217,7 +223,7 @@ const normalizeCliCommandSelectors = (xmlText: string, command: CoreCommand): Cl
     if (!resolved.ok) {
       return {
         ok: false,
-        message: `Failed to resolve CLI command selector: ${resolved.message}`,
+        message: `Failed to resolve CLI command selector: ${"message" in resolved ? resolved.message : "unknown selector resolution error"}`,
       };
     }
     nextCommand.anchorNodeId = resolved.nodeId;
@@ -547,7 +553,7 @@ export const summarizeMusicXmlState = (xmlText: string): CliResult => {
 export const validateMusicXmlCommand = (xmlText: string, command: CoreCommand): CliResult => {
   try {
     const normalized = normalizeCliCommandSelectors(xmlText, command);
-    if (!normalized.ok) return failureResult(normalized.message);
+    if (!normalized.ok) return failureResult("message" in normalized ? normalized.message : "Failed to normalize CLI command.");
     const core = new ScoreCore();
     core.load(xmlText);
     const result = core.dispatch(normalized.command);
@@ -581,7 +587,7 @@ export const validateMusicXmlCommand = (xmlText: string, command: CoreCommand): 
 export const applyMusicXmlCommand = (xmlText: string, command: CoreCommand): CliResult => {
   try {
     const normalized = normalizeCliCommandSelectors(xmlText, command);
-    if (!normalized.ok) return failureResult(normalized.message);
+    if (!normalized.ok) return failureResult("message" in normalized ? normalized.message : "Failed to normalize CLI command.");
     const core = new ScoreCore();
     core.load(xmlText);
     const result = core.dispatch(normalized.command);

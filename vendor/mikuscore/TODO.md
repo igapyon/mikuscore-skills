@@ -2,6 +2,23 @@
 
 ## CLI
 
+- [ ] Remove downstream compatibility carry from `src/ts/cli-api.ts` after the `convert` / `render` / `state` CLI expansion.
+  - Current downstream issue observed on 2026-04-17:
+    - the new selector-normalization path triggered TypeScript discriminated-union access errors around `.message`
+    - `Array.prototype.flatMap` in the indexed-measure-note builder breaks isolated bundle compilation under the current `ES2018` target
+  - Desired upstream outcome:
+    - keep the current CLI behavior
+    - make `src/ts/cli-api.ts` type-check cleanly without downstream narrowing workarounds
+    - keep the implementation compatible with the current isolated/bundled runtime target instead of requiring an `ES2019` bump just for this path
+
+- [ ] Align remaining current-facing CLI wording with the rebuilt command surface.
+  - Current mismatch observed on 2026-04-17:
+    - `index-src.html` / generated `index.html` still describe the CLI as `convert-first`
+    - current user-facing CLI is now `convert` / `render` / initial `state`
+  - Desired upstream outcome:
+    - remove stale `convert-first` wording from landing-page copy
+    - keep README / landing-page wording consistent about the expanded command families
+
 - [x] Document `convert`-first CLI naming consistently in all current-facing docs.
   - Recheck `README.md`, `docs/spec/CLI_STEP1.md`, and future notes after the command surface stabilizes.
   - Keep `import/export` as internal facade wording only, not CLI wording.
