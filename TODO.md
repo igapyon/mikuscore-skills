@@ -11,9 +11,12 @@
 
 - [x] Reflect the current upstream sync state in the repo notes.
   - Latest subtree sync on 2026-04-18:
-    - `vendor/mikuscore` was updated to upstream `devel` tip `d20c8abd`
+    - `vendor/mikuscore` was updated to upstream `devel` tip `2a3df2b8`
   - Current state:
-    - upstream CLI is now documented as `convert` / `render` / initial `state`
+    - upstream CLI now also includes `abc -> midi` and `MEI` / `LilyPond` <-> `MusicXML` conversion updates from the latest pull
+    - upstream CLI is now documented as `convert` / `render` / `state`
+    - upstream now carries `vendor/mikuscore/src/ts/cli-api.ts` directly
+    - `state validate-command` / `state apply-command` support `selector` / `anchor_selector` resolution in upstream `cli-api.ts`
     - no repo-local carry remains in `vendor/mikuscore/src/ts/cli-api.ts`
   - Verification result:
     - `npm --prefix vendor/mikuscore run build` passes

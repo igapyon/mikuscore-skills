@@ -24,7 +24,8 @@ Check the skill-local vendored runtime before concluding that dependencies are m
 - `vendor/mikuscore/scripts/lib/load-cli-api.mjs`
   - CLI loader used by the runtime
 - `vendor/mikuscore/src/ts/cli-api.ts`
-  - upstream CLI API source
+  - upstream CLI API source for `convert` / `render` / `state`
+  - includes selector-aware `state validate-command` / `state apply-command` helpers
 
 ## Primary Upstream Docs
 

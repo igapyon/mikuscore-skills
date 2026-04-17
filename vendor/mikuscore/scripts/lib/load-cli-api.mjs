@@ -3,9 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { createRequire } from "node:module";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+import ts from "typescript";
 import { JSDOM } from "jsdom";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,6 +60,30 @@ function collectGraph(rootDir) {
   return order;
 }
 
+function compileGraph(rootDir) {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mikuscore-cli-api-"));
+  fs.writeFileSync(path.join(tempDir, "package.json"), JSON.stringify({ type: "commonjs" }), "utf8");
+
+  for (const tsId of collectGraph(rootDir)) {
+    const src = readText(rootDir, tsId);
+    const transpiled = ts.transpileModule(src, {
+      fileName: tsId,
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2018,
+        module: ts.ModuleKind.CommonJS,
+        moduleResolution: ts.ModuleResolutionKind.NodeJs,
+        lib: ["DOM", "DOM.Iterable", "ES2018"],
+        esModuleInterop: true,
+      },
+    });
+    const outPath = path.join(tempDir, tsId.replace(/\.ts$/, ".js"));
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, transpiled.outputText, "utf8");
+  }
+
+  return tempDir;
+}
+
 function buildGraphFingerprint(rootDir, graph) {
   const hash = crypto.createHash("sha256");
   for (const tsId of graph) {
@@ -99,54 +123,26 @@ function ensureCompiledCache(rootDir) {
   fs.rmSync(cacheDir, { recursive: true, force: true });
   fs.mkdirSync(cacheDir, { recursive: true });
   fs.writeFileSync(packageJsonPath, JSON.stringify({ type: "commonjs" }), "utf8");
-  const typeScriptCliPath = resolveTypeScriptCli(rootDir);
 
-  const result = spawnSync(
-    process.execPath,
-    [
-      typeScriptCliPath,
-      "--pretty",
-      "false",
-      "--module",
-      "commonjs",
-      "--target",
-      "es2018",
-      "--moduleResolution",
-      "node",
-      "--lib",
-      "DOM,DOM.Iterable,ES2018",
-      "--esModuleInterop",
-      "--skipLibCheck",
-      "--rootDir",
-      rootDir,
-      "--outDir",
-      cacheDir,
-      path.resolve(rootDir, ENTRY_TS),
-    ],
-    {
-      cwd: rootDir,
-      encoding: "utf8",
-    }
-  );
-
-  if (result.status !== 0) {
-    throw new Error(result.stderr?.trim() || result.stdout?.trim() || "tsc command failed");
+  for (const tsId of graph) {
+    const src = readText(rootDir, tsId);
+    const transpiled = ts.transpileModule(src, {
+      fileName: tsId,
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2018,
+        module: ts.ModuleKind.CommonJS,
+        moduleResolution: ts.ModuleResolutionKind.NodeJs,
+        lib: ["DOM", "DOM.Iterable", "ES2018"],
+        esModuleInterop: true,
+      },
+    });
+    const outPath = path.join(cacheDir, tsId.replace(/\.ts$/, ".js"));
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, transpiled.outputText, "utf8");
   }
 
   fs.copyFileSync(path.resolve(rootDir, VEROVIO_JS), verovioCjsPath);
   return cacheDir;
-}
-
-function resolveTypeScriptCli(rootDir) {
-  const requireFromRoot = createRequire(path.join(rootDir, "package.json"));
-
-  try {
-    return requireFromRoot.resolve("typescript/bin/tsc");
-  } catch {
-    throw new Error(
-      "Cannot resolve typescript/bin/tsc from the mikuscore runtime. Install or bundle vendor/mikuscore/node_modules."
-    );
-  }
 }
 
 function installWindowGlobals(window) {

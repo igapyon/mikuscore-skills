@@ -33,13 +33,25 @@ git fetch https://github.com/igapyon/mikuscore.git devel
 git subtree pull --prefix=vendor/mikuscore https://github.com/igapyon/mikuscore.git devel --squash
 ```
 
+再発防止チェック:
+
+- `git fetch https://github.com/igapyon/mikuscore.git devel` を先に実行し、`FETCH_HEAD` を明示的に更新してから `git subtree pull` する
+- `git log --oneline -n 5 FETCH_HEAD` で upstream `devel` の最新 commit を確認する
+- `git log --oneline --decorate -n 5` だけで「取り込み済み」と判断しない。PR merge の内側に subtree sync がぶら下がって見える場合がある
+- 取り込み後は `git rev-parse FETCH_HEAD` と subtree pull 後の squash commit メッセージを見比べ、期待した upstream tip まで進んだことを確認する
+- さらに `git diff --stat FETCH_HEAD HEAD:vendor/mikuscore` が空であることを確認してから「最新 upstream 取り込み済み」と扱う
+- upstream 取り込み前に repo-local `md` 変更がある場合は、先に退避するかコミットして、`fatal: working tree has modifications. Cannot add.` を避ける
+
 最近の取り込みメモ:
 
 - `src/ts/musescore-io.ts` の ES2018 互換化は upstream に入っていたため、そのローカル carry は不要になった
-- 最新の subtree sync は 2026-04-18 時点で upstream `devel` tip `d20c8abd`
+- 最新の subtree sync は 2026-04-18 時点で upstream `devel` tip `2a3df2b8`
 - `scripts/lib/load-cli-api.mjs` の compiled-cache と `typescript/bin/tsc` 解決は、現在は vendored upstream 側の内容として入っている
-- `src/ts/cli-api.ts` の UTF-8 decode は、現在は upstream 側で `TextDecoder` ベースの実装になっている
-- upstream CLI の現在の説明は `convert` / `render` / 初期 `state` 系を前提に読む
+- 2026-04-18 の upstream 取り込みで `vendor/mikuscore/src/ts/cli-api.ts` が upstream 側へ新規追加された
+- `src/ts/cli-api.ts` の plain-text decode は、現在は upstream 側で `TextDecoder` ベースの実装になっている
+- 2026-04-18 の追加 upstream 取り込みで `abc -> midi` と `MEI` / `LilyPond` の `MusicXML` 相互変換、および関連 CLI 文書とテストが入った
+- upstream CLI の現在の説明は `convert` / `render` / `state` 系を前提に読み、`state` では `summarize` / `inspect-measure` / `validate-command` / `apply-command` / `diff` が利用可能
+- `state validate-command` / `state apply-command` は `targetNodeId` / `anchorNodeId` に加えて、`selector` / `anchor_selector` を `cli-api.ts` 側で解決できる
 - 現在は `vendor/mikuscore/src/ts/cli-api.ts` に repo-local carry は残っていない
 - upstream 更新後は `npm --prefix vendor/mikuscore run build` と root `npm run build` の両方で確認する
 

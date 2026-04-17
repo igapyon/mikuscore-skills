@@ -134,7 +134,7 @@ slide: false
 npm run build:bundle
 ```
 
-生成された `bundle/mikuscore-skills/skills/mikuscore` を、自分の skill home 配下の `skills/` へ配置して使います。
+生成された bundle を、自分の skill home 配下へ配置して使います。
 
 開発中にこの repo の中で確認したい場合は、次の流れです。
 
@@ -146,7 +146,7 @@ npm run install:local
 - `npm test`
   - skill 構成の確認
 - `npm run install:local`
-  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` に同期し、`vendor/mikuscore` も skill 配下へ同梱
+  - `skills/mikuscore` を repo-local の `.codex/skills/mikuscore` に同期
 
 その後、新しい Codex セッションで `mikuscore` を明示して試します。
 
