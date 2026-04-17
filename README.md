@@ -14,7 +14,7 @@ This repository is centered on [`skills/mikuscore`](./skills/mikuscore).
 
 Typical uses:
 
-- convert `ABC`, `MusicXML`, `MIDI`, and `MuseScore` data through documented `mikuscore` routes
+- convert `ABC`, `MusicXML`, `MIDI`, `MuseScore`, `MEI`, and `LilyPond` data through documented `mikuscore` routes
 - render score material to `SVG`
 - explain `mikuscore`-specific diagnostics and conversion-loss behavior
 - keep AI-facing full-score handoff aligned with the current `ABC` policy while keeping canonical score handling aligned with `MusicXML`
@@ -28,6 +28,8 @@ In conversation, start by naming `mikuscore`.
 Examples:
 
 - `mikuscore で ABC から MusicXML に変換して`
+- `mikuscore で LilyPond から MusicXML に変換して`
+- `mikuscore で MusicXML から MEI にしたい`
 - `mikuscore でこの譜面を SVG にして`
 - `mikuscore で MIDI から MusicXML にしたい`
 - `mikuscore の diagnostics の見方を教えて`

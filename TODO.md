@@ -23,6 +23,15 @@
     - `npm run test` passes, including isolated bundle CLI conversion
     - root `npm run build` also passes and produces the skill bundle zip
 
+- [ ] Send upstream follow-up for the CLI spec test timeout regression.
+  - Current downstream carry:
+    - `vendor/mikuscore/tests/unit/mikuscore-cli.spec.ts` keeps `15000` timeout on the stdin `abc -> musicxml` case and the stdin `render svg` case
+  - Why it matters:
+    - this repository's GitHub Actions release build runs `npm --prefix vendor/mikuscore run build`
+    - those CLI tests are part of upstream `test:build`, so removing the timeout budget can become a CI degradation on slower runners
+  - Desired follow-up:
+    - restore the `15000` timeout upstream, or otherwise keep equivalent timeout budget for those CLI smoke cases
+
 - [ ] Prepare and send upstream follow-up wording about `vendor/mikuscore/index.html`.
   - Current downstream note:
     - `vendor/mikuscore/index.html` was included in local changes while adjusting the release ZIP date handling in this repository
