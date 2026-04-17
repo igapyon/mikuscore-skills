@@ -22,3 +22,10 @@
     - `npm --prefix vendor/mikuscore run build` passes
     - `npm run test` passes, including isolated bundle CLI conversion
     - root `npm run build` also passes and produces the skill bundle zip
+
+- [ ] Prepare and send upstream follow-up wording about `vendor/mikuscore/index.html`.
+  - Current downstream note:
+    - `vendor/mikuscore/index.html` was included in local changes while adjusting the release ZIP date handling in this repository
+  - Desired follow-up:
+    - prepare wording that asks upstream to handle the `index.html` update on the `mikuscore` side
+    - send that wording upstream instead of carrying the landing-page update here by default

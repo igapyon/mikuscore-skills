@@ -11,7 +11,12 @@ const repoRoot = path.resolve(__dirname, "..");
 const bundleParentRoot = path.resolve(repoRoot, "bundle");
 const bundleDirName = "mikuscore-skills";
 const bundleRoot = path.resolve(bundleParentRoot, bundleDirName);
-const buildDate = new Date().toISOString().slice(0, 10).replaceAll("-", "");
+const buildDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(new Date()).replaceAll("-", "");
 const zipFileName = `mikuscore-skills-${buildDate}.zip`;
 const zipPath = path.resolve(bundleParentRoot, zipFileName);
 
