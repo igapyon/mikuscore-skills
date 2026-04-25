@@ -214,6 +214,12 @@ This keeps agent behavior predictable. It also prevents the skill from accidenta
 
 Runtime artifact lookup should be simple and fixed. Place the single jar and single JavaScript CLI file under the skill directory, such as `skills/<skill-name>/runtime/`, and let the skill use those declared paths.
 
+Do not create a separate skill product line only because an additional runtime path exists. When both Java CLI and Node.js CLI runtimes are available, treat them as runtime artifacts of the same normal `-skills` package. The skill name, activation rules, workflow vocabulary, artifact roles, and product boundary should remain tied to the upstream main application, not to the runtime implementation.
+
+When both Java CLI and Node.js CLI runtime artifacts are bundled, the skill may prefer the Java CLI first for local execution. A single jar is easy to locate, smoke-test, and run in automation environments. If the Java CLI artifact is missing, cannot be invoked, or does not support the requested operation, the skill may fall back to the Node.js CLI runtime.
+
+This runtime preference is an execution policy, not a semantic priority. The upstream main application remains the semantic center. Runtime differences should be reported as capability or compatibility diagnostics.
+
 ### AI-Facing Spec Retrieval Principles
 
 Agent Skills should not rely on broad file search to find prompt or spec documents.
@@ -431,6 +437,7 @@ Test coverage should include:
 
 - skill smoke tests
 - upstream runtime availability checks
+- runtime selection checks, including Java CLI available, Java CLI unavailable with Node.js fallback, unsupported Java CLI operation with Node.js fallback, and all runtimes missing as a hard error
 - representative import / export operations
 - draft / patch / validate / apply operations where applicable
 - diagnostics and hard-error behavior
@@ -502,6 +509,22 @@ repository root
 ```
 
 In the TOBE target shape, runtime artifacts should be placed under each skill directory. Do not design new normal operation around root-level runtime artifacts, vendored source trees, or multiple competing runtime lookup paths. Current repositories that still use a vendored runtime tree should document that as a transition state and keep the lookup path explicit.
+
+For example, `mikuproject-skills` should move toward this shape when both runtime paths are available.
+
+```text
+skills/
+  mikuproject/
+    SKILL.md
+    references/
+    runtime/
+      mikuproject.jar
+      mikuproject.mjs
+```
+
+The Java jar and Node.js CLI file are peer runtime artifacts. Their presence should not change the skill name or split the workflow vocabulary into runtime-specific skill products.
+
+`vendor/` directories are transition-only locations for repositories that still depend on copied upstream source trees or broader runtime trees. New normal operation should not add new runtime lookup through `vendor/`. As upstream Java and Node.js CLI artifacts become available as single files, repositories should move those artifacts into `skills/<skill-name>/runtime/` and remove the vendored runtime tree.
 
 ### Skill Naming Conventions
 
